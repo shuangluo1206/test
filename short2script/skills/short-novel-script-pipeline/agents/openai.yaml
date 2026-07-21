@@ -1,0 +1,7 @@
+interface:
+  display_name: "Short Novel Script Pipeline"
+  short_description: "短篇小说扩写40-100集短漫剧的可追溯管线"
+  default_prompt: "Use $short-novel-script-pipeline to run a traceable short-novel-to-longform-short-manga-drama expansion pipeline."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,18 @@
+{
+  "target_episodes": 40,
+  "episode_duration_seconds": 90,
+  "rewrite_intensity": "balanced",
+  "character_background_policy": "minor_adjust",
+  "subplot_policy": "moderate",
+  "new_character_policy": "controlled",
+  "source_preservation_level": "core_plot",
+  "source_boundary_mode": "balanced_spark",
+  "pacing_controls": {
+    "epilogue_max_episodes": 2,
+    "event_reuse_max_episodes": 3,
+    "conflict_mode_streak_limit": 2,
+    "major_climax_window": "36-39",
+    "cross_block_bridge_max_episodes": 1
+  },
+  "market_tags": ["职场复仇", "业绩反杀", "商业合同", "背刺打脸", "离职反击"]
+}

@@ -1,0 +1,12 @@
+{
+  "run_id": "dryrun_config_5ep",
+  "outputs_dir": "/home/disk6/loutianao/baidu/nlp-general/short2script/short2script/runs/dryrun_config_5ep/outputs",
+  "readable_outputs_dir": "/home/disk6/loutianao/baidu/nlp-general/short2script/short2script/runs/dryrun_config_5ep/readable_outputs",
+  "total_clean_json_files": 0,
+  "rendered_files": [],
+  "failed_files": [],
+  "field_coverage_by_file": {},
+  "unknown_field_labels": [],
+  "render_errors": [],
+  "removed_legacy_files": []
+}
