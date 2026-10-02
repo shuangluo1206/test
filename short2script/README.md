@@ -25,7 +25,7 @@
 
 RD 批量造数据时以 CLI 为主入口，直接调用 `skills/short-novel-script-pipeline/scripts/pipeline_runner.py`；项目内 Skill 作为 Codex 交互入口和流程说明一起交付，不作为批处理依赖。
 
-交付包必须包含 `skills/short-novel-script-pipeline/`、`prompts/clean/`、`configs/`、`outputs/260622-短篇小说扩写剧本管线环节表.csv`、`outputs/260707-RD批量造数据交付说明.md`、`README.md`、`AGENTS.md`、默认 Baidu OneAPI Opus 4.6 调用脚本 `skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh` 和无密钥 Dodo API 调用模板 `skills/short-novel-script-pipeline/scripts/rd_dodo_api_template.sh`；不得包含 `runs/`、`.env`、token/API key、未授权小说源文档。
+交付包必须包含 `skills/short-novel-script-pipeline/`、`prompts/clean/`、`configs/`、`outputs/260622-短篇小说扩写剧本管线环节表.csv`、`outputs/260707-RD批量造数据交付说明.md`、`README.md`、`AGENTS.md`、默认 OneAPI Opus 4.6 调用脚本 `skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh` 和无密钥 LLM API 调用模板 `skills/short-novel-script-pipeline/scripts/rd_api_template.sh`；不得包含 `runs/`、`.env`、token/API key、未授权小说源文档。
 
 批量生产命令模板：
 
@@ -41,7 +41,7 @@ python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py \
 
 05 现在使用“基础资产 + 按弧线事件池”分批生成，每次 05 模型调用默认独立超时为 900 秒，可用 `--stage-05-timeout` 调整；其他环节仍使用 `--timeout`。
 
-真实 run 默认使用 `skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh`，该脚本只读取 `/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708` 中的 `base_url` / `ONEAPI_API_KEY`，默认模型为 `Claude Opus 4.6`、`max_tokens=128000`、`output_config.effort=high`，并使用流式响应避免长请求被零信任网关按空闲连接切断。如需改走 Dodo 或 Gemini，必须显式传 `--llm-script <script>`，默认不走其他 Opus 渠道。
+真实 run 默认使用 `skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh`，该脚本只读取 `~/.short2script/.env-oneapi` 中的 `base_url` / `ONEAPI_API_KEY`，默认模型为 `Claude Opus 4.6`、`max_tokens=128000`、`output_config.effort=high`，并使用流式响应避免长请求被零信任网关按空闲连接切断。如需改走 LLM 或 Gemini，必须显式传 `--llm-script <script>`，默认不走其他 Opus 渠道。
 
 全局配置解析优先级固定为：用户 `--run-config` 或任一配置 CLI 覆盖 > 同一 `run_id` 且小说 `sha256` 一致的 `parsed/00_run_config.json` > `00a_global_config` 的 LLM 推荐。只要用户显式指定任一配置项，就不调用 00a，未指定字段使用本地默认值；进入 00a 时目标集数由本地锁定为 40，不依赖模型自觉保持。解析来源、是否调用模型、系统锁定值和最终配置写入 `parsed/00a_global_config_resolution.json`。
 
@@ -83,7 +83,7 @@ python3 skills/short-novel-script-pipeline/scripts/editorial_review.py --run-dir
 
 ```bash
 python3 -m unittest skills/short-novel-script-pipeline/scripts/test_pipeline_tools.py
-python3 /Users/cjlbd/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/short-novel-script-pipeline
+python3 quick_validate.py skills/short-novel-script-pipeline
 python3 skills/short-novel-script-pipeline/scripts/export_stage_table.py --check
 python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py --novel docs/固执爷爷听不懂人话.txt --run-config configs/minimal_real_5ep.json --run-id dryrun_config_5ep --generate-episodes 5 --dry-run
 ```

@@ -1,14 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-TOKEN="${DODO_API_KEY:-${DODO_TOKEN:-}}"
-MODEL="${DODO_MODEL:-Claude Sonnet 4.6}"
-MAX_TOKENS="${DODO_MAX_TOKENS:-${MAX_TOKENS:-24000}}"
+TOKEN="${LLM_API_KEY:-${LLM_TOKEN:-}}"
+MODEL="${LLM_MODEL:-Claude Sonnet 4.6}"
+MAX_TOKENS="${LLM_MAX_TOKENS:-${MAX_TOKENS:-24000}}"
 CURL_MAX_TIME="${CURL_MAX_TIME:-2400}"
-EFFORT_LEVELS="${DODO_EFFORT_LEVELS:-${EFFORT_LEVELS:-${DODO_EFFORT:-high}}}"
-DODO_ENABLE_THINKING="${DODO_ENABLE_THINKING:-0}"
-DODO_THINKING_DISPLAY="${DODO_THINKING_DISPLAY:-hidden}"
-ENDPOINT="${DODO_ENDPOINT:-https://oneapi-comate.baidu-int.com/v1/messages}"
+EFFORT_LEVELS="${LLM_EFFORT_LEVELS:-${EFFORT_LEVELS:-${LLM_EFFORT:-high}}}"
+LLM_ENABLE_THINKING="${LLM_ENABLE_THINKING:-0}"
+LLM_THINKING_DISPLAY="${LLM_THINKING_DISPLAY:-hidden}"
+ENDPOINT="${LLM_ENDPOINT:-https://api.example.com/v1/messages}"
 
 if [ -n "${1:-}" ]; then
   PROMPT="$*"
@@ -17,7 +17,7 @@ else
 fi
 
 if [ -z "${TOKEN}" ]; then
-  echo "Error: set DODO_API_KEY or DODO_TOKEN before running the Dodo pipeline script." >&2
+  echo "Error: set LLM_API_KEY or LLM_TOKEN before running the LLM pipeline script." >&2
   exit 1
 fi
 
@@ -34,7 +34,7 @@ trap cleanup EXIT
 
 make_body() {
   local effort="$1"
-  python3 - "${MODEL}" "${MAX_TOKENS}" "${effort}" "${DODO_ENABLE_THINKING}" "${DODO_THINKING_DISPLAY}" "${PROMPT}" <<'PY'
+  python3 - "${MODEL}" "${MAX_TOKENS}" "${effort}" "${LLM_ENABLE_THINKING}" "${LLM_THINKING_DISPLAY}" "${PROMPT}" <<'PY'
 import json
 import sys
 

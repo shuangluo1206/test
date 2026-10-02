@@ -8,11 +8,11 @@ package_added_untracked_files:
 - outputs/260720-RD批量造数据交付说明.md
 - outputs/260720-RD批量造数据交付验收记录.md
 validation_mode_default: collect
-default_llm_script: skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh
+default_llm_script: skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh
 default_llm_model: Claude Opus 4.6
 default_llm_effort: high
 default_llm_max_tokens: 128000
-optional_api_template: skills/short-novel-script-pipeline/scripts/rd_dodo_api_template.sh
+optional_api_template: skills/short-novel-script-pipeline/scripts/rd_api_template.sh
 readable_markdown_default: enabled
 
 included:
@@ -21,8 +21,8 @@ included:
 - configs/
 - prompts/clean/
 - skills/short-novel-script-pipeline/
-- skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh
-- skills/short-novel-script-pipeline/scripts/rd_dodo_api_template.sh
+- skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh
+- skills/short-novel-script-pipeline/scripts/rd_api_template.sh
 - outputs/260622-短篇小说扩写剧本管线环节表.csv
 - outputs/260720-RD批量造数据交付说明.md
 - outputs/260720-RD批量造数据交付验收记录.md
@@ -42,16 +42,16 @@ excluded:
 release_gate:
 - python3 -m unittest skills/short-novel-script-pipeline/scripts/test_pipeline_tools.py : PASS, 404 tests
 - package-local unittest excluding 4 unavailable source-novel fixture tests : PASS, 400 tests
-- python3 /Users/cjlbd/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/short-novel-script-pipeline : PASS
+- python3 quick_validate.py skills/short-novel-script-pipeline : PASS
 - python3 skills/short-novel-script-pipeline/scripts/export_stage_table.py --check : PASS, 13 stages
 - dryrun_config_5ep_package_260720 : PASS, 5 episodes
 - dryrun_qingming_40ep_package_260720 : PASS, first 5 episodes
-- bash -n run_baidu_oneapi_claude_opus_4_6.sh rd_dodo_api_template.sh dodo_sonnet46_pipeline.sh : PASS
+- bash -n run_oneapi_claude_opus_4_6.sh rd_api_template.sh claude_sonnet46_pipeline.sh : PASS
 
 notes:
 - Default collect mode records creative and quality issues as warnings and prioritizes complete output.
 - API, incomplete transport output, JSON parse failure, hard contract field loss, missing core 08 fields, episode coverage/numbering failure and artifact write failure remain hard blockers.
 - overall_status=PASS in collect mode means structurally complete and auditable, not human editorial approval.
-- The package contains no secret. RD must set BAIDU_ONEAPI_ENV_FILE or explicitly use the optional Dodo template with its own credential.
+- The package contains no secret. RD must set ONEAPI_ENV_FILE or explicitly use the optional LLM template with its own credential.
 - This packaging pass did not start a new live API full run.
 - Four tests directly read docs/固执爷爷听不懂人话.txt. That source novel is intentionally excluded from the RD package; the remaining 400 package-local tests pass.

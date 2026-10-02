@@ -16,7 +16,7 @@
 
 ## 修改规则
 
-- 不修改业务方源文档：`/Users/cjlbd/Documents/ChengObsidian/资料/业务方文档/260622-【短篇小说扩写剧本】剧本需求.md`。
+- 不修改业务方源文档：`业务方需求文档 260622-【短篇小说扩写剧本】剧本需求.md（本地保留）`。
 - 不修改测试小说：`docs/固执爷爷听不懂人话.txt`。
 - 不修改新增验收小说：`docs/清明回村，村口情报组织造谣我在城里做皮肉生意-96858.txt`。
 - 需要调整目录或交付约定时，先更新本文件或 `README.md`，再改实践。
@@ -29,7 +29,7 @@
 
 ```bash
 python3 -m unittest skills/short-novel-script-pipeline/scripts/test_pipeline_tools.py
-python3 /Users/cjlbd/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/short-novel-script-pipeline
+python3 quick_validate.py skills/short-novel-script-pipeline
 python3 skills/short-novel-script-pipeline/scripts/export_stage_table.py --check
 python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py --novel docs/固执爷爷听不懂人话.txt --run-config configs/minimal_real_5ep.json --run-id dryrun_config_5ep --generate-episodes 5 --dry-run
 python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py --novel docs/清明回村，村口情报组织造谣我在城里做皮肉生意-96858.txt --run-config configs/qingming_40ep.json --run-id dryrun_qingming_40ep --generate-episodes 5 --dry-run

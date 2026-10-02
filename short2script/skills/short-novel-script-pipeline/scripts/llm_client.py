@@ -12,8 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_BAIDU_ONEAPI_ENV_FILE = "/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708"
-FALLBACK_LLM_SCRIPT = SCRIPT_DIR / "run_baidu_oneapi_claude_opus_4_6.sh"
+DEFAULT_ONEAPI_ENV_FILE = str(Path.home() / ".short2script" / ".env-oneapi")
+FALLBACK_LLM_SCRIPT = SCRIPT_DIR / "run_oneapi_claude_opus_4_6.sh"
 TRANSIENT_ERROR_MARKERS = (
     "HTTP 429",
     "HTTP 500",
@@ -31,19 +31,19 @@ TRANSIENT_ERROR_MARKERS = (
     "curl: (18)",
     "transfer closed with outstanding read data remaining",
 )
-BD_DATA_KEY_NAMES = {
+LLM_GATEWAY_KEY_NAMES = {
     "bddataapikey",
     "bddatallmapikey",
     "bddataapi",
     "apikey",
     "token",
 }
-BD_DATA_DEFAULT_MAX_TOKENS = "16384"
-BD_DATA_STAGE_MAX_TOKENS = {
+LLM_GATEWAY_DEFAULT_MAX_TOKENS = "16384"
+LLM_GATEWAY_STAGE_MAX_TOKENS = {
     "07_episode_planning": "65536",
 }
-DODO_DEFAULT_MAX_TOKENS = "24000"
-DODO_STAGE_MAX_TOKENS = {
+LLM_DEFAULT_MAX_TOKENS = "24000"
+LLM_STAGE_MAX_TOKENS = {
     "03_plot_character_extract": "64000",
     "04_adaptation_direction": "64000",
     "05_plot_character_adaptation": "64000",
@@ -51,7 +51,7 @@ DODO_STAGE_MAX_TOKENS = {
     "07_episode_planning": "64000",
     "08_script_body_generation": "16000",
 }
-BAIDU_ONEAPI_DISABLED_THINKING_STAGES = {
+ONEAPI_DISABLED_THINKING_STAGES = {
     "02_storyline_understanding",
     "04_adaptation_direction",
     "04a_flashback_screening",
@@ -124,83 +124,83 @@ def is_transient_error(message: str) -> bool:
     return any(marker in message for marker in TRANSIENT_ERROR_MARKERS)
 
 
-def is_bd_data_script(llm_script: Path) -> bool:
-    """Handle is bd data script."""
-    return llm_script.name == "bd-data-chat.sh"
+def is_gateway_script(llm_script: Path) -> bool:
+    """Handle is gateway script."""
+    return llm_script.name == "gateway-chat.sh"
 
 
-def is_dodo_pipeline_script(llm_script: Path) -> bool:
-    """Handle is dodo pipeline script."""
-    return llm_script.name in {"dodo_sonnet46_pipeline.sh", "rd_dodo_api_template.sh"}
+def is_llm_pipeline_script(llm_script: Path) -> bool:
+    """Handle is llm pipeline script."""
+    return llm_script.name in {"claude_sonnet46_pipeline.sh", "rd_api_template.sh"}
 
 
-def is_baidu_oneapi_opus_script(llm_script: Path) -> bool:
-    """Handle is baidu oneapi opus script."""
-    return llm_script.name == "run_baidu_oneapi_claude_opus_4_6.sh"
+def is_oneapi_opus_script(llm_script: Path) -> bool:
+    """Handle is oneapi opus script."""
+    return llm_script.name == "run_oneapi_claude_opus_4_6.sh"
 
 
 def build_llm_command(llm_script: Path, prompt: str) -> list[str]:
     """Handle build llm command."""
-    if is_bd_data_script(llm_script):
+    if is_gateway_script(llm_script):
         return ["bash", str(llm_script), "gemini"]
-    if is_dodo_pipeline_script(llm_script) or is_baidu_oneapi_opus_script(llm_script):
+    if is_llm_pipeline_script(llm_script) or is_oneapi_opus_script(llm_script):
         return ["bash", str(llm_script)]
     return ["bash", str(llm_script), prompt]
 
 
 def build_llm_stdin(llm_script: Path, prompt: str) -> bytes | None:
     """Handle build llm stdin."""
-    if is_bd_data_script(llm_script) or is_dodo_pipeline_script(llm_script) or is_baidu_oneapi_opus_script(llm_script):
+    if is_gateway_script(llm_script) or is_llm_pipeline_script(llm_script) or is_oneapi_opus_script(llm_script):
         return prompt.encode("utf-8")
     return None
 
 
 def llm_runtime_options(llm_script: Path | None, *, stage_id: str | None = None) -> dict[str, str]:
     """Handle llm runtime options."""
-    if llm_script is not None and is_baidu_oneapi_opus_script(llm_script):
-        default_thinking_type = "disabled" if stage_id in BAIDU_ONEAPI_DISABLED_THINKING_STAGES else "adaptive"
+    if llm_script is not None and is_oneapi_opus_script(llm_script):
+        default_thinking_type = "disabled" if stage_id in ONEAPI_DISABLED_THINKING_STAGES else "adaptive"
         return {
-            "preset": "baidu-oneapi-claude-opus-4.6",
+            "preset": "oneapi-claude-opus-4.6",
             "transport": "shell_stdin",
-            "model": os.environ.get("BAIDU_ONEAPI_MODEL", "Claude Opus 4.6"),
-            "max_tokens": os.environ.get("BAIDU_ONEAPI_MAX_TOKENS", "128000"),
-            "thinking.type": os.environ.get("BAIDU_ONEAPI_THINKING_TYPE", default_thinking_type),
-            "output_config.effort": os.environ.get("BAIDU_ONEAPI_EFFORT", "high"),
-            "stream": os.environ.get("BAIDU_ONEAPI_STREAM", "1"),
-            "env_file": os.environ.get("BAIDU_ONEAPI_ENV_FILE", DEFAULT_BAIDU_ONEAPI_ENV_FILE),
+            "model": os.environ.get("ONEAPI_MODEL", "Claude Opus 4.6"),
+            "max_tokens": os.environ.get("ONEAPI_MAX_TOKENS", "128000"),
+            "thinking.type": os.environ.get("ONEAPI_THINKING_TYPE", default_thinking_type),
+            "output_config.effort": os.environ.get("ONEAPI_EFFORT", "high"),
+            "stream": os.environ.get("ONEAPI_STREAM", "1"),
+            "env_file": os.environ.get("ONEAPI_ENV_FILE", DEFAULT_ONEAPI_ENV_FILE),
         }
-    if llm_script is not None and is_dodo_pipeline_script(llm_script):
-        default_max_tokens = DODO_STAGE_MAX_TOKENS.get(
+    if llm_script is not None and is_llm_pipeline_script(llm_script):
+        default_max_tokens = LLM_STAGE_MAX_TOKENS.get(
             stage_id or "",
-            os.environ.get("DODO_MAX_TOKENS", DODO_DEFAULT_MAX_TOKENS),
+            os.environ.get("LLM_MAX_TOKENS", LLM_DEFAULT_MAX_TOKENS),
         )
         return {
-            "preset": "dodo-sonnet-4.6",
+            "preset": "claude-sonnet-4.6",
             "transport": "shell_stdin",
-            "EFFORT_LEVELS": os.environ.get("DODO_EFFORT_LEVELS", os.environ.get("EFFORT_LEVELS", "high")),
-            "MAX_TOKENS": os.environ.get("DODO_MAX_TOKENS", default_max_tokens),
-            "DODO_MAX_TOKENS": os.environ.get("DODO_MAX_TOKENS", default_max_tokens),
-            "DODO_EFFORT": os.environ.get("DODO_EFFORT", "high"),
-            "DODO_ENABLE_THINKING": os.environ.get("DODO_ENABLE_THINKING", "0"),
-            "DODO_THINKING_DISPLAY": os.environ.get("DODO_THINKING_DISPLAY", "hidden"),
+            "EFFORT_LEVELS": os.environ.get("LLM_EFFORT_LEVELS", os.environ.get("EFFORT_LEVELS", "high")),
+            "MAX_TOKENS": os.environ.get("LLM_MAX_TOKENS", default_max_tokens),
+            "LLM_MAX_TOKENS": os.environ.get("LLM_MAX_TOKENS", default_max_tokens),
+            "LLM_EFFORT": os.environ.get("LLM_EFFORT", "high"),
+            "LLM_ENABLE_THINKING": os.environ.get("LLM_ENABLE_THINKING", "0"),
+            "LLM_THINKING_DISPLAY": os.environ.get("LLM_THINKING_DISPLAY", "hidden"),
         }
-    if llm_script is None or not is_bd_data_script(llm_script):
+    if llm_script is None or not is_gateway_script(llm_script):
         return {}
-    default_max_tokens = BD_DATA_STAGE_MAX_TOKENS.get(
+    default_max_tokens = LLM_GATEWAY_STAGE_MAX_TOKENS.get(
         stage_id or "",
-        os.environ.get("BD_DATA_MAX_TOKENS", BD_DATA_DEFAULT_MAX_TOKENS),
+        os.environ.get("LLM_GATEWAY_MAX_TOKENS", LLM_GATEWAY_DEFAULT_MAX_TOKENS),
     )
     stage_env_key = ""
     if stage_id:
-        stage_env_key = "BD_DATA_MAX_TOKENS_" + re.sub(r"[^A-Za-z0-9]+", "_", stage_id).upper()
+        stage_env_key = "LLM_GATEWAY_MAX_TOKENS_" + re.sub(r"[^A-Za-z0-9]+", "_", stage_id).upper()
     return {
         "preset": "gemini",
         "transport": "direct_http",
-        "BD_DATA_MODEL": os.environ.get("BD_DATA_MODEL", "gemini-3.1-pro-preview"),
-        "BD_DATA_MAX_TOKENS": (
+        "LLM_GATEWAY_MODEL": os.environ.get("LLM_GATEWAY_MODEL", "gemini-3.1-pro-preview"),
+        "LLM_GATEWAY_MAX_TOKENS": (
                 os.environ.get(stage_env_key, default_max_tokens) if stage_env_key else default_max_tokens
             ),
-        "BD_DATA_REASONING_EFFORT": os.environ.get("BD_DATA_REASONING_EFFORT", "high"),
+        "LLM_GATEWAY_REASONING_EFFORT": os.environ.get("LLM_GATEWAY_REASONING_EFFORT", "high"),
     }
 
 
@@ -211,13 +211,13 @@ def build_llm_env(llm_script: Path, *, stage_id: str | None = None) -> dict[str,
     for key, value in options.items():
         if key not in {"preset", "transport"}:
             env.setdefault(key, value)
-    if is_baidu_oneapi_opus_script(llm_script):
-        env.setdefault("BAIDU_ONEAPI_MODEL", options["model"])
-        env.setdefault("BAIDU_ONEAPI_MAX_TOKENS", options["max_tokens"])
-        env.setdefault("BAIDU_ONEAPI_THINKING_TYPE", options["thinking.type"])
-        env.setdefault("BAIDU_ONEAPI_EFFORT", options["output_config.effort"])
-        env.setdefault("BAIDU_ONEAPI_STREAM", options["stream"])
-        env.setdefault("BAIDU_ONEAPI_ENV_FILE", options["env_file"])
+    if is_oneapi_opus_script(llm_script):
+        env.setdefault("ONEAPI_MODEL", options["model"])
+        env.setdefault("ONEAPI_MAX_TOKENS", options["max_tokens"])
+        env.setdefault("ONEAPI_THINKING_TYPE", options["thinking.type"])
+        env.setdefault("ONEAPI_EFFORT", options["output_config.effort"])
+        env.setdefault("ONEAPI_STREAM", options["stream"])
+        env.setdefault("ONEAPI_ENV_FILE", options["env_file"])
     return env
 
 
@@ -231,8 +231,8 @@ def clean_env_value(value: str) -> str:
     return text.strip()
 
 
-def read_bd_data_key_from_file(env_file: Path) -> str:
-    """Handle read bd data key from file."""
+def read_gateway_key_from_file(env_file: Path) -> str:
+    """Handle read gateway key from file."""
     if not env_file.exists():
         return ""
     fallback = ""
@@ -247,23 +247,23 @@ def read_bd_data_key_from_file(env_file: Path) -> str:
         name, value = line.split("=", 1)
         normalized = "".join(ch for ch in name.lower() if ch.isalnum())
         cleaned = clean_env_value(value)
-        if normalized in BD_DATA_KEY_NAMES and cleaned:
+        if normalized in LLM_GATEWAY_KEY_NAMES and cleaned:
             return cleaned
         if not fallback and cleaned.startswith("sk-"):
             fallback = cleaned
     return fallback
 
 
-def resolve_bd_data_api_key(llm_script: Path) -> str:
-    """Handle resolve bd data api key."""
-    api_key = os.environ.get("BD_DATA_API_KEY") or os.environ.get("BD_DATA_LLM_API_KEY") or ""
+def resolve_gateway_api_key(llm_script: Path) -> str:
+    """Handle resolve gateway api key."""
+    api_key = os.environ.get("LLM_GATEWAY_API_KEY") or os.environ.get("LLM_GATEWAY_LLM_API_KEY") or ""
     if api_key:
         return api_key
-    api_key = read_bd_data_key_from_file(llm_script.parent / ".env")
+    api_key = read_gateway_key_from_file(llm_script.parent / ".env")
     if api_key:
         return api_key
-    env_file = os.environ.get("BD_DATA_ENV_FILE", "")
-    return read_bd_data_key_from_file(Path(env_file)) if env_file else ""
+    env_file = os.environ.get("LLM_GATEWAY_ENV_FILE", "")
+    return read_gateway_key_from_file(Path(env_file)) if env_file else ""
 
 
 def endpoint_from_base(base: str) -> str:
@@ -274,34 +274,34 @@ def endpoint_from_base(base: str) -> str:
     return f"{clean}/chat/completions"
 
 
-def resolve_bd_data_endpoint() -> str:
-    """Handle resolve bd data endpoint."""
-    endpoint = os.environ.get("BD_DATA_ENDPOINT")
+def resolve_gateway_endpoint() -> str:
+    """Handle resolve gateway endpoint."""
+    endpoint = os.environ.get("LLM_GATEWAY_ENDPOINT")
     if endpoint:
         return endpoint.rstrip("/")
-    return endpoint_from_base(os.environ.get("BD_DATA_BASE_URL", "http://yy.dbh.baidu-int.com/v1"))
+    return endpoint_from_base(os.environ.get("LLM_GATEWAY_BASE_URL", "http://localhost:8000/v1"))
 
 
-def build_bd_data_payload(prompt: str, llm_script: Path, *, stage_id: str | None = None) -> dict[str, object]:
-    """Handle build bd data payload."""
+def build_gateway_payload(prompt: str, llm_script: Path, *, stage_id: str | None = None) -> dict[str, object]:
+    """Handle build gateway payload."""
     options = llm_runtime_options(llm_script, stage_id=stage_id)
     payload: dict[str, object] = {
-        "model": options["BD_DATA_MODEL"],
+        "model": options["LLM_GATEWAY_MODEL"],
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
-        "max_tokens": int(options["BD_DATA_MAX_TOKENS"]),
+        "max_tokens": int(options["LLM_GATEWAY_MAX_TOKENS"]),
     }
-    reasoning_effort = options.get("BD_DATA_REASONING_EFFORT", "")
+    reasoning_effort = options.get("LLM_GATEWAY_REASONING_EFFORT", "")
     if reasoning_effort:
         payload["reasoning_effort"] = reasoning_effort
-    max_completion_tokens = os.environ.get("BD_DATA_MAX_COMPLETION_TOKENS")
+    max_completion_tokens = os.environ.get("LLM_GATEWAY_MAX_COMPLETION_TOKENS")
     if max_completion_tokens:
         payload["max_completion_tokens"] = int(max_completion_tokens)
     return payload
 
 
-def extract_bd_data_text(data: dict[str, object]) -> tuple[str, str]:
-    """Handle extract bd data text."""
+def extract_gateway_text(data: dict[str, object]) -> tuple[str, str]:
+    """Handle extract gateway text."""
     texts: list[str] = []
     reasoning: list[str] = []
     for choice in data.get("choices") or []:
@@ -325,7 +325,7 @@ def extract_bd_data_text(data: dict[str, object]) -> tuple[str, str]:
         if any(reason == "length" for reason in finish_reasons):
             usage = data.get("usage", {})
             raise RuntimeError(
-                "BD-DATA API returned empty content with finish_reason=length; "
+                "LLM-GATEWAY API returned empty content with finish_reason=length; "
                 f"usage={json.dumps(usage, ensure_ascii=False)}"
             )
     stdout = "\n".join(texts) if texts else json.dumps(data, ensure_ascii=False, indent=2)
@@ -335,13 +335,13 @@ def extract_bd_data_text(data: dict[str, object]) -> tuple[str, str]:
     return stdout, stderr
 
 
-def call_bd_data_api(prompt: str, *, llm_script: Path, timeout: int, stage_id: str | None = None) -> tuple[str, str]:
-    """Handle call bd data api."""
-    api_key = resolve_bd_data_api_key(llm_script)
+def call_gateway_api(prompt: str, *, llm_script: Path, timeout: int, stage_id: str | None = None) -> tuple[str, str]:
+    """Handle call gateway api."""
+    api_key = resolve_gateway_api_key(llm_script)
     if not api_key:
-        raise RuntimeError("缺少 BD-DATA API Key。请设置 BD_DATA_API_KEY，或确认 bd-data env 文件存在。")
-    endpoint = resolve_bd_data_endpoint()
-    payload = build_bd_data_payload(prompt, llm_script, stage_id=stage_id)
+        raise RuntimeError("缺少 LLM-GATEWAY API Key。请设置 LLM_GATEWAY_API_KEY，或确认 gateway env 文件存在。")
+    endpoint = resolve_gateway_endpoint()
+    payload = build_gateway_payload(prompt, llm_script, stage_id=stage_id)
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
         endpoint,
@@ -361,17 +361,17 @@ def call_bd_data_api(prompt: str, *, llm_script: Path, timeout: int, stage_id: s
         status = int(exc.code)
         raw = exc.read().decode("utf-8", errors="replace")
     except urllib.error.URLError as exc:
-        raise RuntimeError(f"BD-DATA API request failed: {exc.reason}") from exc
+        raise RuntimeError(f"LLM-GATEWAY API request failed: {exc.reason}") from exc
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise RuntimeError(f"Error: non-JSON response, HTTP {status}\n{raw}") from exc
     if not 200 <= status < 300 or data.get("error"):
-        raise RuntimeError(f"Error: BD-DATA API HTTP {status}\n{json.dumps(data, ensure_ascii=False, indent=2)}")
-    return extract_bd_data_text(data)
+        raise RuntimeError(f"Error: LLM-GATEWAY API HTTP {status}\n{json.dumps(data, ensure_ascii=False, indent=2)}")
+    return extract_gateway_text(data)
 
 
-def call_bd_data_llm(
+def call_gateway_llm(
     prompt: str,
     *,
     llm_script: Path,
@@ -379,20 +379,20 @@ def call_bd_data_llm(
     retries: int,
     stage_id: str | None = None,
 ) -> LLMResult:
-    """Handle call bd data llm."""
+    """Handle call gateway llm."""
     started = time.time()
     attempts = retries + 1
     last_error = ""
     for attempt in range(1, attempts + 1):
         try:
-            stdout, stderr = call_bd_data_api(prompt, llm_script=llm_script, timeout=timeout, stage_id=stage_id)
+            stdout, stderr = call_gateway_api(prompt, llm_script=llm_script, timeout=timeout, stage_id=stage_id)
             clean = clean_llm_output(stdout)
             if clean and not clean.startswith("Error:"):
                 elapsed = round(time.time() - started, 2)
                 if attempt > 1:
                     stderr = f"retried_attempts={attempt - 1}\n{stderr}".strip()
                 return LLMResult(raw=stdout, clean=clean, returncode=0, elapsed_seconds=elapsed, stderr=stderr)
-            last_error = clean or "BD-DATA API returned empty content"
+            last_error = clean or "LLM-GATEWAY API returned empty content"
         except RuntimeError as exc:
             last_error = str(exc)
         if attempt >= attempts or not is_transient_error(last_error):
@@ -412,8 +412,8 @@ def call_llm(
     attempts_dir: Path | None = None,
 ) -> LLMResult:
     """Handle call llm."""
-    if is_bd_data_script(llm_script):
-        return call_bd_data_llm(prompt, llm_script=llm_script, timeout=timeout, retries=retries, stage_id=stage_id)
+    if is_gateway_script(llm_script):
+        return call_gateway_llm(prompt, llm_script=llm_script, timeout=timeout, retries=retries, stage_id=stage_id)
 
     started = time.time()
     attempts = retries + 1

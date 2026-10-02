@@ -16,19 +16,4 @@ Short2script
 
 版本信息
 ---
-本项目的各版本信息和变更历史可以在[这里][changelog]查看。
-
-维护者
----
-### owners
-* jiaozhenyu(jiaozhenyu@baidu.com)
-
-### committers
-* jiaozhenyu(jiaozhenyu@baidu.com)
-
-讨论
----
-百度Hi交流群：群号
-
-
-[changelog]: http://icode.baidu.com/repos/baidu/nlp-general/short2script/blob/master:CHANGELOG.md
+本项目的各版本信息和变更历史可以查看根目录的 [CHANGELOG.md](CHANGELOG.md)。

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Baidu OneAPI Anthropic-compatible Claude Opus 4.6 runner.
+# OneAPI Anthropic-compatible Claude Opus 4.6 runner.
 # Default env file is intentionally outside the repository; do not commit keys.
 #
 # Expected runtime:
@@ -10,7 +10,7 @@ set -euo pipefail
 # - thinking.type: adaptive
 # - output_config.effort: high
 
-ENV_FILE="${BAIDU_ONEAPI_ENV_FILE:-/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708}"
+ENV_FILE="${ONEAPI_ENV_FILE:-${HOME}/.short2script/.env-oneapi}"
 [ -f "${ENV_FILE}" ] || { printf 'Missing env file: %s\n' "${ENV_FILE}" >&2; exit 1; }
 
 ENV_PARSED="$(
@@ -56,12 +56,12 @@ case "${BASE_URL}" in
   */v1) ENDPOINT="${BASE_URL}/messages" ;;
   *) ENDPOINT="${BASE_URL}/v1/messages" ;;
 esac
-MODEL="${BAIDU_ONEAPI_MODEL:-Claude Opus 4.6}"
-MAX_TOKENS="${BAIDU_ONEAPI_MAX_TOKENS:-128000}"
-THINKING_TYPE="${BAIDU_ONEAPI_THINKING_TYPE:-adaptive}"
-EFFORT="${BAIDU_ONEAPI_EFFORT:-high}"
+MODEL="${ONEAPI_MODEL:-Claude Opus 4.6}"
+MAX_TOKENS="${ONEAPI_MAX_TOKENS:-128000}"
+THINKING_TYPE="${ONEAPI_THINKING_TYPE:-adaptive}"
+EFFORT="${ONEAPI_EFFORT:-high}"
 CURL_MAX_TIME="${CURL_MAX_TIME:-2400}"
-STREAM="${BAIDU_ONEAPI_STREAM:-1}"
+STREAM="${ONEAPI_STREAM:-1}"
 
 if [ "$#" -gt 0 ]; then
   PROMPT="$*"

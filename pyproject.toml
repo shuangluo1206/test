@@ -12,22 +12,17 @@ build-backend = "hatchling.build"
 # 项目名称，将用于发布和安装
 name = "short2script"
 # 项目版本，1.0.0 以上版本被视为正式发布版本
-# 修改版本号时请遵循：https://ku.baidu-int.com/knowledge/HFVrC7hq1Q/tjIp17bwPd/CHf1I_vIs4/9lX58wB6nSUjI_
 version = "0.1.0"
 # 项目简介，不支持非英文字符
-description = "Hello world"
+description = "Short novel to script pipeline"
 # README 文件路径，用于生成长描述
 readme = "README.md"
 # Python 版本要求
 requires-python = ">=3.12"
 # 许可证信息
 license = { text = "MIT" }
-# 作者信息列表
-authors = [
-    { name = "jiaozhenyu", email = "jiaozhenyu@baidu.com" }
-]
 # 关键词，用于包索引和搜索
-keywords = ["baidu", "demo"]
+keywords = ["short-drama", "script", "llm", "pipeline"]
 # 项目分类，用于 PyPI 分类（如果项目不打算开源可以忽略）
 # 完整分类列表：https://pypi.org/pypi?%3Aaction=list_classifiers
 classifiers = [
@@ -51,8 +46,6 @@ test = [
 
 # 项目相关 URL 配置
 [project.urls]
-# 项目主页，通常是项目的 icode 地址
-Homepage = "http://icode.baidu.com/repos/baidu/nlp-general/short2script/tree/master"
 # 更新日志文件链接
 Changelog = "CHANGELOG.md"
 

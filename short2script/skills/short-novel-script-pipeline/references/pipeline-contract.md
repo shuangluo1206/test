@@ -36,8 +36,8 @@ Turn a 7k-50k Chinese short novel into traceable 40-100 episode short-manga-dram
 - `run_config.pacing_controls`: epilogue max 2, event reuse max 3, conflict-mode streak max 2, major climax window auto, cross-block bridge max 1
 - `generate_episodes`: 1 by default; project validation often uses 5
 - `runs_dir`: `runs`
-- LLM script priority: `--llm-script`, `$LLM_SCRIPT`, packaged `skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh`
-- Default real-run model channel: Baidu OneAPI Anthropic-compatible `Claude Opus 4.6`, reading URL/key only from `/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708`, with `max_tokens=128000`, `output_config.effort=high`, and streaming enabled. Bounded structured-output stages `02`, `04`, `04a`, `04b`, `05`, `06`, `07`, and `08` default to `thinking.type=disabled`; `01` and `03` use `adaptive`. An explicit `BAIDU_ONEAPI_THINKING_TYPE` overrides this.
+- LLM script priority: `--llm-script`, `$LLM_SCRIPT`, packaged `skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh`
+- Default real-run model channel: OneAPI Anthropic-compatible `Claude Opus 4.6`, reading URL/key only from `~/.short2script/.env-oneapi`, with `max_tokens=128000`, `output_config.effort=high`, and streaming enabled. Bounded structured-output stages `02`, `04`, `04a`, `04b`, `05`, `06`, `07`, and `08` default to `thinking.type=disabled`; `01` and `03` use `adaptive`. An explicit `ONEAPI_THINKING_TYPE` overrides this.
 - Each stage `05` split call uses a dedicated 900-second timeout by default (`--stage-05-timeout`); other stages use `--timeout`.
 
 `--run-config` may point to a JSON file. CLI flags such as `--target-episodes`, `--episode-duration-seconds`, `--rewrite-intensity`, `--subplot-policy`, and `--market-tags` override the file values.

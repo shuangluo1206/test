@@ -14,7 +14,7 @@ Use this skill for the project-local pipeline that expands a Chinese short novel
 Read `references/pipeline-contract.md` before changing stage order, prompt inputs, output schemas, validators, or delivery paths.
 
 Keep these source files read-only:
-- `/Users/cjlbd/Documents/ChengObsidian/资料/业务方文档/260622-【短篇小说扩写剧本】剧本需求.md`
+- `业务方需求文档 260622-【短篇小说扩写剧本】剧本需求.md（本地保留）`
 - `docs/固执爷爷听不懂人话.txt`
 - `docs/清明回村，村口情报组织造谣我在城里做皮肉生意-96858.txt`
 
@@ -43,7 +43,7 @@ python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py \
 
 If no config file or config CLI override is provided and the same run has no historical config for the same novel SHA, conditional model stage `00a_global_config` reads the complete short novel and recommends global creative settings and 3-6 market tags. The default target is 40 episodes. Resolution precedence is: any explicit user config, then matching run history, then LLM recommendation. Any explicit config skips the 00a model call and unspecified fields use local defaults. The source and resolved config are audited in `parsed/00a_global_config_resolution.json`.
 
-If `--llm-script` is omitted, the runner checks `$LLM_SCRIPT`, then the packaged `skills/short-novel-script-pipeline/scripts/run_baidu_oneapi_claude_opus_4_6.sh`. The packaged default script reads `/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708`, uses only that `base_url` / `ONEAPI_API_KEY`, and defaults to `Claude Opus 4.6`, `max_tokens=128000`, `output_config.effort=high`, with streaming enabled to keep long requests active through the zero-trust gateway. Dodo, Gemini, or any other channel must be selected explicitly with `--llm-script`.
+If `--llm-script` is omitted, the runner checks `$LLM_SCRIPT`, then the packaged `skills/short-novel-script-pipeline/scripts/run_oneapi_claude_opus_4_6.sh`. The packaged default script reads `~/.short2script/.env-oneapi`, uses only that `base_url` / `ONEAPI_API_KEY`, and defaults to `Claude Opus 4.6`, `max_tokens=128000`, `output_config.effort=high`, with streaming enabled to keep long requests active through the zero-trust gateway. LLM, Gemini, or any other channel must be selected explicitly with `--llm-script`.
 
 For failed long runs, resume from the failed stage instead of rerunning upstream stages:
 
@@ -180,7 +180,7 @@ Run these commands after script, prompt, or Skill changes:
 
 ```bash
 python3 -m unittest skills/short-novel-script-pipeline/scripts/test_pipeline_tools.py
-python3 /Users/cjlbd/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/short-novel-script-pipeline
+python3 quick_validate.py skills/short-novel-script-pipeline
 python3 skills/short-novel-script-pipeline/scripts/export_stage_table.py --check
 python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py --novel docs/固执爷爷听不懂人话.txt --run-config configs/minimal_real_5ep.json --run-id dryrun_config_5ep --generate-episodes 5 --dry-run
 python3 skills/short-novel-script-pipeline/scripts/pipeline_runner.py --novel docs/清明回村，村口情报组织造谣我在城里做皮肉生意-96858.txt --run-config configs/qingming_40ep.json --run-id dryrun_qingming_40ep --generate-episodes 5 --dry-run

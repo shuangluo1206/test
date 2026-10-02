@@ -5289,8 +5289,8 @@ model: claude | stop: max_tokens
             with self.assertRaisesRegex(RuntimeError, "LLM call failed"):
                 llm_client.call_llm("prompt", llm_script=Path("/tmp/fake.sh"), cwd=PROJECT_ROOT, retries=0)
 
-    def test_llm_client_calls_bd_data_api_directly_for_large_prompts(self):
-        """Verify llm client calls bd data api directly for large prompts."""
+    def test_llm_client_calls_gateway_api_directly_for_large_prompts(self):
+        """Verify llm client calls gateway api directly for large prompts."""
         captured = {}
 
         class FakeResponse:
@@ -5315,7 +5315,7 @@ model: claude | stop: max_tokens
             captured["timeout"] = timeout
             return FakeResponse()
 
-        with mock.patch.object(llm_client, "resolve_bd_data_api_key", return_value="sk-test"):
+        with mock.patch.object(llm_client, "resolve_gateway_api_key", return_value="sk-test"):
             with mock.patch.object(urllib.request, "urlopen", side_effect=fake_urlopen):
                 with mock.patch.object(
                     llm_client.subprocess,
@@ -5324,7 +5324,7 @@ model: claude | stop: max_tokens
                 ):
                     result = llm_client.call_llm(
                         "prompt",
-                        llm_script=Path("/tmp/bd-data-chat.sh"),
+                        llm_script=Path("/tmp/gateway-chat.sh"),
                         cwd=PROJECT_ROOT,
                         retries=0,
                     )
@@ -5336,14 +5336,14 @@ model: claude | stop: max_tokens
         self.assertEqual(body["reasoning_effort"], "high")
         self.assertEqual(captured["timeout"], 1800)
 
-    def test_llm_client_sets_bd_data_long_output_defaults(self):
-        """Verify llm client sets bd data long output defaults."""
-        payload = llm_client.build_bd_data_payload(
+    def test_llm_client_sets_gateway_long_output_defaults(self):
+        """Verify llm client sets gateway long output defaults."""
+        payload = llm_client.build_gateway_payload(
             "prompt",
-            Path("/tmp/bd-data-chat.sh"),
+            Path("/tmp/gateway-chat.sh"),
             stage_id="07_episode_planning",
         )
-        options = llm_client.llm_runtime_options(Path("/tmp/bd-data-chat.sh"), stage_id="07_episode_planning")
+        options = llm_client.llm_runtime_options(Path("/tmp/gateway-chat.sh"), stage_id="07_episode_planning")
 
         self.assertEqual(payload["max_tokens"], 65536)
         self.assertEqual(payload["reasoning_effort"], "high")
@@ -5351,17 +5351,17 @@ model: claude | stop: max_tokens
 
     def test_llm_runtime_options_are_stage_specific(self):
         """Verify llm runtime options are stage specific."""
-        script = Path("/tmp/bd-data-chat.sh")
+        script = Path("/tmp/gateway-chat.sh")
 
         stage01 = llm_client.llm_runtime_options(script, stage_id="01_novel_summary")
         stage07 = llm_client.llm_runtime_options(script, stage_id="07_episode_planning")
 
-        self.assertEqual(stage01["BD_DATA_MAX_TOKENS"], "16384")
-        self.assertEqual(stage07["BD_DATA_MAX_TOKENS"], "65536")
+        self.assertEqual(stage01["LLM_GATEWAY_MAX_TOKENS"], "16384")
+        self.assertEqual(stage07["LLM_GATEWAY_MAX_TOKENS"], "65536")
 
-    def test_llm_client_uses_stdin_and_high_tokens_for_dodo_pipeline(self):
-        """Verify llm client uses stdin and high tokens for dodo pipeline."""
-        script = Path("/tmp/dodo_sonnet46_pipeline.sh")
+    def test_llm_client_uses_stdin_and_high_tokens_for_llm_pipeline(self):
+        """Verify llm client uses stdin and high tokens for llm pipeline."""
+        script = Path("/tmp/claude_sonnet46_pipeline.sh")
 
         self.assertEqual(llm_client.build_llm_command(script, "很长的prompt"), ["bash", str(script)])
         self.assertEqual(llm_client.build_llm_stdin(script, "很长的prompt"), "很长的prompt".encode("utf-8"))
@@ -5371,35 +5371,35 @@ model: claude | stop: max_tokens
         stage03 = llm_client.llm_runtime_options(script, stage_id="03_plot_character_extract")
 
         self.assertEqual(stage07["EFFORT_LEVELS"], "high")
-        self.assertEqual(stage07["DODO_ENABLE_THINKING"], "0")
-        self.assertEqual(stage07["DODO_THINKING_DISPLAY"], "hidden")
+        self.assertEqual(stage07["LLM_ENABLE_THINKING"], "0")
+        self.assertEqual(stage07["LLM_THINKING_DISPLAY"], "hidden")
         self.assertEqual(stage03["MAX_TOKENS"], "64000")
         self.assertEqual(stage07["MAX_TOKENS"], "64000")
         self.assertEqual(stage08["EFFORT_LEVELS"], "high")
         self.assertLess(int(stage08["MAX_TOKENS"]), int(stage07["MAX_TOKENS"]))
 
-    def test_llm_client_uses_baidu_oneapi_opus_46_as_default(self):
-        """Verify llm client uses baidu oneapi opus 46 as default."""
+    def test_llm_client_uses_oneapi_opus_46_as_default(self):
+        """Verify llm client uses oneapi opus 46 as default."""
         self.assertEqual(
             llm_client.FALLBACK_LLM_SCRIPT.name,
-            "run_baidu_oneapi_claude_opus_4_6.sh",
+            "run_oneapi_claude_opus_4_6.sh",
         )
         self.assertTrue(llm_client.FALLBACK_LLM_SCRIPT.exists())
 
-        script = Path("/tmp/run_baidu_oneapi_claude_opus_4_6.sh")
+        script = Path("/tmp/run_oneapi_claude_opus_4_6.sh")
         self.assertEqual(llm_client.build_llm_command(script, "很长的prompt"), ["bash", str(script)])
         self.assertEqual(llm_client.build_llm_stdin(script, "很长的prompt"), "很长的prompt".encode("utf-8"))
         options = llm_client.llm_runtime_options(script, stage_id="07_episode_planning")
-        self.assertEqual(options["preset"], "baidu-oneapi-claude-opus-4.6")
+        self.assertEqual(options["preset"], "oneapi-claude-opus-4.6")
         self.assertEqual(options["model"], "Claude Opus 4.6")
         self.assertEqual(options["max_tokens"], "128000")
         self.assertEqual(options["output_config.effort"], "high")
         self.assertEqual(options["stream"], "1")
-        self.assertEqual(options["env_file"], "/Users/cjlbd/Desktop/Code/.env-baidu-oneapi-data-0708")
+        self.assertEqual(options["env_file"], llm_client.DEFAULT_ONEAPI_ENV_FILE)
 
     def test_oneapi_bounded_json_stages_disable_hidden_thinking_but_keep_high_effort(self):
         """Verify oneapi bounded json stages disable hidden thinking but keep high effort."""
-        script = Path("/tmp/run_baidu_oneapi_claude_opus_4_6.sh")
+        script = Path("/tmp/run_oneapi_claude_opus_4_6.sh")
         with mock.patch.dict("os.environ", {}, clear=True):
             stage02 = llm_client.llm_runtime_options(script, stage_id="02_storyline_understanding")
             stage04 = llm_client.llm_runtime_options(script, stage_id="04_adaptation_direction")
@@ -5421,8 +5421,8 @@ model: claude | stop: max_tokens
         self.assertEqual(stage08["thinking.type"], "disabled")
         self.assertEqual(stage05["output_config.effort"], "high")
         self.assertEqual(stage05["max_tokens"], "128000")
-        self.assertEqual(stage05_env["BAIDU_ONEAPI_THINKING_TYPE"], "disabled")
-        self.assertEqual(stage05_env["BAIDU_ONEAPI_EFFORT"], "high")
+        self.assertEqual(stage05_env["ONEAPI_THINKING_TYPE"], "disabled")
+        self.assertEqual(stage05_env["ONEAPI_EFFORT"], "high")
 
     def test_oneapi_wrapper_marks_empty_stream_as_retryable_failure(self):
         """Verify oneapi wrapper marks empty stream as retryable failure."""
@@ -5443,7 +5443,7 @@ model: claude | stop: max_tokens
             attempts_dir = Path(tmpdir) / "attempts"
             result = llm_client.call_llm(
                 "prompt",
-                llm_script=Path("/tmp/run_baidu_oneapi_claude_opus_4_6.sh"),
+                llm_script=Path("/tmp/run_oneapi_claude_opus_4_6.sh"),
                 cwd=Path(tmpdir),
                 retries=0,
                 attempts_dir=attempts_dir,
@@ -5474,14 +5474,14 @@ model: claude | stop: max_tokens
         self.assertEqual(state["status"], "partial")
         self.assertEqual(state["continuous_completed_prefix"], 2)
 
-    def test_llm_client_still_allows_explicit_rd_dodo_template(self):
-        """Verify llm client still allows explicit rd dodo template."""
-        script = Path("/tmp/rd_dodo_api_template.sh")
+    def test_llm_client_still_allows_explicit_rd_llm_template(self):
+        """Verify llm client still allows explicit rd llm template."""
+        script = Path("/tmp/rd_api_template.sh")
         self.assertEqual(llm_client.build_llm_command(script, "很长的prompt"), ["bash", str(script)])
         self.assertEqual(llm_client.build_llm_stdin(script, "很长的prompt"), "很长的prompt".encode("utf-8"))
         self.assertEqual(
             llm_client.llm_runtime_options(script, stage_id="07_episode_planning")["preset"],
-            "dodo-sonnet-4.6",
+            "claude-sonnet-4.6",
         )
 
     def test_clean_llm_output_strips_leaked_thinking_prefix(self):
@@ -5509,15 +5509,15 @@ model: claude | stop: max_tokens
 
         self.assertEqual(llm_client.clean_llm_output(raw), '```json\n{"ok": true}\n```')
 
-    def test_llm_client_rejects_empty_bd_data_length_response(self):
-        """Verify llm client rejects empty bd data length response."""
+    def test_llm_client_rejects_empty_gateway_length_response(self):
+        """Verify llm client rejects empty gateway length response."""
         data = {
             "choices": [{"message": {"content": ""}, "finish_reason": "length"}],
             "usage": {"completion_tokens": 65536},
         }
 
         with self.assertRaisesRegex(RuntimeError, "finish_reason=length"):
-            llm_client.extract_bd_data_text(data)
+            llm_client.extract_gateway_text(data)
 
     def test_validate_episode_sequence_requires_exact_target_count(self):
         """Verify validate episode sequence requires exact target count."""
@@ -6584,11 +6584,11 @@ model: claude | stop: max_tokens
         self.assertEqual(pipeline_runner.resolve_validation_mode(strict_args), "strict")
         self.assertEqual(pipeline_runner.resolve_validation_mode(report_only_args), "collect")
 
-    def test_dodo_empty_json_traceback_is_transient(self):
-        """Verify dodo empty json traceback is transient."""
+    def test_llm_empty_json_traceback_is_transient(self):
+        """Verify llm empty json traceback is transient."""
         self.assertTrue(llm_client.is_transient_error("json.decoder.JSONDecodeError: Expecting value"))
-        self.assertTrue(llm_client.is_transient_error("Error: empty response from Dodo API"))
-        self.assertTrue(llm_client.is_transient_error("Error: non-JSON response from Dodo API"))
+        self.assertTrue(llm_client.is_transient_error("Error: empty response from LLM API"))
+        self.assertTrue(llm_client.is_transient_error("Error: non-JSON response from LLM API"))
 
     def test_qa_blockers_are_report_only_only_distinguishes_hard_blockers(self):
         """Verify qa blockers are report only only distinguishes hard blockers."""
